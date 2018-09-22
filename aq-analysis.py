@@ -33,21 +33,34 @@ def main(argv):
         elif opt in ('-i', '--input'):
             inputfile = arg
 
-    lineWordCount = 0
-    lineNumbers = numpy.array([])
-    words = {}
-    delims = ", ", "-", "\n", "."                  #delimiters
-    regexPattern = '|'.join(map(re.escape, delims))     #regular expression
+    lineCount = 0
+    allData = []
+    singleData = []
     if os.path.exists(inputfile):
         try:
             datafile = open(inputfile, 'r')
             for line in datafile:
-                splitLine = re.split(regexPattern, line)
-                if splitLine[0] == '':
+                #need to ignore the first 4 lines...
+                if lineCount < 4:
+                    lineCount += 1  #!!!
                     continue
-                lineWordCount += len(splitLine)
-                lineNumbers = numpy.append(lineNumbers, [len(splitLine)])
-                record_word_cnt(splitLine, words)
+                line = line.rstrip()
+                splitLine = line.split(',')
+                #if not enough data on line, then skip
+                if len(splitLine) < 28:
+                    continue
+                #perform line operations
+                pID = splitLine[17]         #participant ID
+                duration = splitLine[5]     #questionnaire duration
+                singleData.append(pID)
+                singleData.append(duration)
+                #calculate response-based score
+                print(singleData)
+                #line count increment...
+                lineCount += 1
+                #next line prep
+                allData.append(singleData)
+                singleData = [] #assign empty list, don't delete...
         finally:
             datafile.close()
     else:
@@ -59,16 +72,31 @@ def main(argv):
     try:
         outfile = open(outputfile, "w")
         outfile.write('Data\n')
+        for participant in allData:
+            toWrite = ','.join(participant)
+            outfile.write(toWrite + '\n')
     except err:
         print err
     finally:
         outfile.close()
+
+    print 'DONE'
 
 
 #####################################################################
 
 def usage():
     print 'Usage: aq-analysis.py -i <inputfile.csv>'
+
+
+def matchResponse(response):
+    if (response == 'Slightly Agree') or (response == 'Definitely Agree'):
+        return 1
+    elif (response == 'Slightly Disagree') or (response == 'Definitely Disagree'):
+        return 0
+    else:
+        print ('Error: unrecognised question response - ', response)
+        return -1
 
 
 if __name__ == "__main__":
