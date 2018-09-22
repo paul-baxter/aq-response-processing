@@ -55,7 +55,7 @@ def main(argv):
                 singleData.append(pID)
                 singleData.append(duration)
                 #calculate response-based score
-                print(singleData)
+                singleData.append(AQscore(splitLine))
                 #line count increment...
                 lineCount += 1
                 #next line prep
@@ -75,7 +75,7 @@ def main(argv):
         for participant in allData:
             toWrite = ','.join(participant)
             outfile.write(toWrite + '\n')
-    except err:
+    except IOError as err:
         print err
     finally:
         outfile.close()
@@ -89,14 +89,52 @@ def usage():
     print 'Usage: aq-analysis.py -i <inputfile.csv>'
 
 
-def matchResponse(response):
+def matchResponseAgree(response):
     if (response == 'Slightly Agree') or (response == 'Definitely Agree'):
         return 1
     elif (response == 'Slightly Disagree') or (response == 'Definitely Disagree'):
         return 0
     else:
-        print ('Error: unrecognised question response - ', response)
+        print ('ERROR: unrecognised question response - ', response)
         return -1
+
+
+def matchResponseDisagree(response):
+    if (response == 'Slightly Agree') or (response == 'Definitely Agree'):
+        return 0
+    elif (response == 'Slightly Disagree') or (response == 'Definitely Disagree'):
+        return 1
+    else:
+        print ('ERROR: unrecognised question response - ', response)
+        return -1
+
+
+def AQscore(splitLine):
+    #calculate the AQ score from the split line data
+    score = 0
+    #Q1
+    score += matchResponseAgree(splitLine[18])
+    #Q2
+    score += matchResponseDisagree(splitLine[19])
+    #Q3
+    score += matchResponseDisagree(splitLine[20])
+    #Q4
+    score += matchResponseDisagree(splitLine[21])
+    #Q5
+    score += matchResponseAgree(splitLine[22])
+    #Q6
+    score += matchResponseDisagree(splitLine[23])
+    #Q7
+    score += matchResponseAgree(splitLine[24])
+    #Q8
+    score += matchResponseDisagree(splitLine[25])
+    #Q9
+    score += matchResponseDisagree(splitLine[26])
+    #Q10
+    score += matchResponseAgree(splitLine[27])
+    #result
+    return str(score)
+
 
 
 if __name__ == "__main__":
