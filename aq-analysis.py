@@ -55,7 +55,12 @@ def main(argv):
                 singleData.append(pID)
                 singleData.append(duration)
                 #calculate response-based score
-                singleData.append(AQscore(splitLine))
+                score = AQscore(splitLine)
+                singleData.append(score)
+                if int(score) > 6:
+                    singleData.append('1')
+                elif int(score) <= 6:
+                    singleData.append('0')
                 #line count increment...
                 lineCount += 1
                 #next line prep
@@ -69,9 +74,12 @@ def main(argv):
 
     print ''
 
+    #sort the list by pID (not based on integer conversion...)
+    #allData.sort(key=lambda x: x[0])
+
     try:
         outfile = open(outputfile, "w")
-        outfile.write('Data\n')
+        outfile.write('pID,duration,AQscore,AQ>6\n')
         for participant in allData:
             toWrite = ','.join(participant)
             outfile.write(toWrite + '\n')
