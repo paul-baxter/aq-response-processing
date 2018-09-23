@@ -51,13 +51,23 @@ def main(argv):
                     continue
                 #perform line operations
                 pID = splitLine[17]         #participant ID
+                #handle cases where there is no ID provided...
+                if pID == '':
+                    pID = 'error'
+                    print 'pID error detected'
                 duration = splitLine[5]     #questionnaire duration
+                #if time taken is too low, then something wrong - log error...
+                if int(duration) < 10:
+                    duration = 'too short'
+                    print 'duration error detected'
                 singleData.append(pID)
                 singleData.append(duration)
                 #calculate response-based score
                 score = AQscore(splitLine)
                 singleData.append(score)
-                if int(score) > 6:
+                if score == 'error':
+                    singleData.append('error')
+                elif int(score) > 6:
                     singleData.append('1')
                 elif int(score) <= 6:
                     singleData.append('0')
@@ -75,7 +85,7 @@ def main(argv):
     print ''
 
     #sort the list by pID (not based on integer conversion...)
-    #allData.sort(key=lambda x: x[0])
+    allData.sort(key=lambda x: x[0])
 
     try:
         outfile = open(outputfile, "w")
@@ -99,47 +109,79 @@ def usage():
 
 def matchResponseAgree(response):
     if (response == 'Slightly Agree') or (response == 'Definitely Agree'):
-        return 1
+        return (1, 'ok')
     elif (response == 'Slightly Disagree') or (response == 'Definitely Disagree'):
-        return 0
+        return (0, 'ok')
     else:
-        print ('ERROR: unrecognised question response - ', response)
-        return -1
+        print 'ERROR: unrecognised question response - ', response
+        return (-1, 'error')
 
 
 def matchResponseDisagree(response):
     if (response == 'Slightly Agree') or (response == 'Definitely Agree'):
-        return 0
+        return (0, 'ok')
     elif (response == 'Slightly Disagree') or (response == 'Definitely Disagree'):
-        return 1
+        return (1, 'ok')
     else:
-        print ('ERROR: unrecognised question response - ', response)
-        return -1
+        print 'ERROR: unrecognised question response - ', response
+        return (-1,'error')
 
 
 def AQscore(splitLine):
     #calculate the AQ score from the split line data
     score = 0
+    back = ''
+    errMsg = ''
     #Q1
-    score += matchResponseAgree(splitLine[18])
+    back, errMsg = matchResponseAgree(splitLine[18])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q2
-    score += matchResponseDisagree(splitLine[19])
+    back, errMsg = matchResponseDisagree(splitLine[19])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q3
-    score += matchResponseDisagree(splitLine[20])
+    back, errMsg = matchResponseDisagree(splitLine[20])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q4
-    score += matchResponseDisagree(splitLine[21])
+    back, errMsg = matchResponseDisagree(splitLine[21])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q5
-    score += matchResponseAgree(splitLine[22])
+    back, errMsg = matchResponseAgree(splitLine[22])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q6
-    score += matchResponseDisagree(splitLine[23])
+    back, errMsg = matchResponseDisagree(splitLine[23])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q7
-    score += matchResponseAgree(splitLine[24])
+    back, errMsg = matchResponseAgree(splitLine[24])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q8
-    score += matchResponseDisagree(splitLine[25])
+    back, errMsg = matchResponseDisagree(splitLine[25])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q9
-    score += matchResponseDisagree(splitLine[26])
+    back, errMsg = matchResponseDisagree(splitLine[26])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #Q10
-    score += matchResponseAgree(splitLine[27])
+    back, errMsg = matchResponseAgree(splitLine[27])
+    if errMsg == 'error':
+        return 'error'
+    score += int(back)
     #result
     return str(score)
 
